@@ -9,12 +9,14 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.1.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    compile group: "org.slf4j", name: "slf4j-jdk14", version: "1.7.25"
 
     compile ("com.marklogic:ml-javaclient-util:3.10.0") {
         exclude module: "jdom2"
@@ -27,7 +29,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes "Main-Class": "kafka.App"
+        attributes "Main-Class": "com.marklogic.KafkaMarklogicSource"
     }
 
     from {

@@ -1,4 +1,4 @@
-package kafka.producer;
+package com.marklogic.kafka.producer;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
