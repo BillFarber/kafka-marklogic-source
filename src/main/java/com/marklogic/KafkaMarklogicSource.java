@@ -17,6 +17,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -27,8 +28,6 @@ public class KafkaMarklogicSource {
 	private static Logger logger = LoggerFactory.getLogger(KafkaMarklogicSource.class);
 
 	private static Producer<Long, String> producer;
-	private static String DEFAULT_KAFKA_BROKERS = "localhost:9092";
-    private static String DEFAULT_TOPIC_NAME="marklogic";
 	private static String kafkaBrokers;
 	private static String topicName;
 
@@ -39,44 +38,32 @@ public class KafkaMarklogicSource {
 	private static String sentCollection;
 	private static String query;
 
-    private static Long DELAY=0L;
-
 	private Map<String, String> config;
 
 	public static void main(String[] args) {
 		logger.info("Starting kafka-marklogic-source");
-
-		Options options = new Options();
-
-		Option kafkaHostOption = new Option("h", "host", true, "Kafka Host & IP list");
-		kafkaHostOption.setRequired(false);
-		options.addOption(kafkaHostOption);
-
-		Option topicNameOption = new Option("t", "topic", true, "Topic Name");
-		topicNameOption.setRequired(false);
-		options.addOption(topicNameOption);
-
-		CommandLineParser parser = new DefaultParser();
-		HelpFormatter formatter = new HelpFormatter();
-		CommandLine cmd;
+		String configFilename = null;
 
 		try {
-			cmd = parser.parse(options, args);
+			if (args.length == 1) {
+				configFilename = args[0];
+			} else {
+				throw new ParseException("The configuration file must be specified.");
+			}
 		} catch (ParseException e) {
-			System.out.println(e.getMessage());
-			formatter.printHelp("kafka-marklogic-source", options);
+			System.err.println(e.getMessage());
+			System.err.println("kafka-marklogic-source <CONFIG-FILE>");
 
 			System.exit(1);
 			return;
 		}
-		kafkaBrokers = cmd.getOptionValue("host", DEFAULT_KAFKA_BROKERS);
-		topicName = cmd.getOptionValue("topic", DEFAULT_TOPIC_NAME);
 
 		Properties appProps = new Properties();
 		try {
-			appProps.load(KafkaMarklogicSource.class.getClassLoader().getResourceAsStream("kafkaSource.properties"));
+			appProps.load(new FileInputStream(configFilename));
 		} catch (IOException e) {
-
+			System.err.println("Config file could not be loaded: " + configFilename);
+			System.err.println(e.getMessage());
 		}
 
 		String appVersion = appProps.getProperty("version");

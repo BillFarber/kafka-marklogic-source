@@ -8,7 +8,7 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import java.util.Map;
 
 /**
- * Defines configuration properties for the MarkLogic sink connector.
+ * Defines configuration properties for the kafka-marklogic-source.
  */
 public class ApplicationConfig extends AbstractConfig {
 
