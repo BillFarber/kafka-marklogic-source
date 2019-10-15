@@ -8,8 +8,6 @@ import com.marklogic.client.ext.SecurityContextType;
 
 import javax.net.ssl.SSLContext;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
-import java.util.Properties;
 
 public class DefaultDatabaseClientCreator implements DatabaseClientCreator {
 
@@ -19,35 +17,35 @@ public class DefaultDatabaseClientCreator implements DatabaseClientCreator {
 		this.configuredDatabaseClientFactory = new DefaultConfiguredDatabaseClientFactory();
 	}
 
-	protected DatabaseClientConfig buildDatabaseClientConfig(Properties appProps) {
+	protected DatabaseClientConfig buildDatabaseClientConfig(ApplicationConfig config) {
 		DatabaseClientConfig clientConfig = new DatabaseClientConfig();
-		clientConfig.setCertFile(appProps.getProperty(ApplicationConfig.CONNECTION_CERT_FILE));
-		clientConfig.setCertPassword(appProps.getProperty(ApplicationConfig.CONNECTION_CERT_PASSWORD));
+		clientConfig.setCertFile(config.getString(ApplicationConfig.CONNECTION_CERT_FILE));
+		clientConfig.setCertPassword(config.getString(ApplicationConfig.CONNECTION_CERT_PASSWORD));
 
-		String type = appProps.getProperty(ApplicationConfig.CONNECTION_TYPE);
+		String type = config.getString(ApplicationConfig.CONNECTION_TYPE);
 		if (type != null && type.trim().length() > 0) {
 			clientConfig.setConnectionType(DatabaseClient.ConnectionType.valueOf(type.toUpperCase()));
 		}
 
-		String database = appProps.getProperty(ApplicationConfig.QUERY_DATABASE);
+		String database = config.getString(ApplicationConfig.QUERY_DATABASE);
 		if (database != null && database.trim().length() > 0) {
 			clientConfig.setDatabase(database);
 		}
 
-		clientConfig.setExternalName(appProps.getProperty(ApplicationConfig.CONNECTION_EXTERNAL_NAME));
-		clientConfig.setHost(appProps.getProperty(ApplicationConfig.CONNECTION_HOST));
-		clientConfig.setPassword(appProps.getProperty(ApplicationConfig.CONNECTION_PASSWORD));
-		clientConfig.setPort(Integer.parseInt(appProps.getProperty(ApplicationConfig.CONNECTION_PORT)));
+		clientConfig.setExternalName(config.getString(ApplicationConfig.CONNECTION_EXTERNAL_NAME));
+		clientConfig.setHost(config.getString(ApplicationConfig.CONNECTION_HOST));
+		clientConfig.setPassword(config.getString(ApplicationConfig.CONNECTION_PASSWORD));
+		clientConfig.setPort(config.getInt(ApplicationConfig.CONNECTION_PORT));
 
-		String securityContextType = appProps.getProperty(ApplicationConfig.CONNECTION_SECURITY_CONTEXT_TYPE).toUpperCase();
+		String securityContextType = config.getString(ApplicationConfig.CONNECTION_SECURITY_CONTEXT_TYPE).toUpperCase();
 		clientConfig.setSecurityContextType(SecurityContextType.valueOf(securityContextType));
 
-		String simpleSsl = appProps.getProperty(ApplicationConfig.CONNECTION_SIMPLE_SSL);
-		if (simpleSsl != null && Boolean.parseBoolean(simpleSsl)) {
+		Boolean simpleSsl = config.getBoolean(ApplicationConfig.CONNECTION_SIMPLE_SSL);
+		if (simpleSsl != null && simpleSsl) {
 			configureSimpleSsl(clientConfig);
 		}
 
-		clientConfig.setUsername(appProps.getProperty(ApplicationConfig.CONNECTION_USERNAME));
+		clientConfig.setUsername(config.getString(ApplicationConfig.CONNECTION_USERNAME));
 
 		return clientConfig;
 	}
@@ -75,8 +73,8 @@ public class DefaultDatabaseClientCreator implements DatabaseClientCreator {
 	}
 
 	@Override
-	public DatabaseClient createDatabaseClient(Properties appProps) {
-		DatabaseClientConfig clientConfig = buildDatabaseClientConfig(appProps);
+	public DatabaseClient createDatabaseClient(ApplicationConfig config) {
+		DatabaseClientConfig clientConfig = buildDatabaseClientConfig(config);
 		return configuredDatabaseClientFactory.newDatabaseClient(clientConfig);
 	}
 }

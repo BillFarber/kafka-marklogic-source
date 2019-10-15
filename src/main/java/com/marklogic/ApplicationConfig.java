@@ -32,6 +32,9 @@ public class ApplicationConfig extends AbstractConfig {
 	public static final String QUERY_STRING = "ml.query.string";
 
 	public static ConfigDef CONFIG_DEF = new ConfigDef()
+        .define(KAFKA_BOOTSTRAP_SERVERS, Type.STRING, Importance.HIGH, "Comma-delimited list of Kafka servers")
+        .define(KAFKA_TOPIC, Type.STRING, Importance.HIGH, "The Kafka topic to send messages to")
+
 		.define(CONNECTION_HOST, Type.STRING, Importance.HIGH, "MarkLogic server hostname")
 		.define(CONNECTION_PORT, Type.INT, Importance.HIGH, "The REST app server port to connect to")
 		.define(CONNECTION_SECURITY_CONTEXT_TYPE, Type.STRING, Importance.HIGH, "Type of MarkLogic security context to create - either digest, basic, kerberos, certificate, or none")

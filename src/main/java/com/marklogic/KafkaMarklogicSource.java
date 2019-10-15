@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -38,61 +37,12 @@ public class KafkaMarklogicSource {
 	private static String sentCollection;
 	private static String query;
 
-	private Map<String, String> config;
-
 	public static void main(String[] args) {
 		logger.info("Starting kafka-marklogic-source");
-		String configFilename = null;
 
-		try {
-			if (args.length == 1) {
-				configFilename = args[0];
-			} else {
-				throw new ParseException("The configuration file must be specified.");
-			}
-		} catch (ParseException e) {
-			System.err.println(e.getMessage());
-			System.err.println("kafka-marklogic-source <CONFIG-FILE>");
-
-			System.exit(1);
-			return;
-		}
-
-		Properties appProps = new Properties();
-		try {
-			appProps.load(new FileInputStream(configFilename));
-		} catch (IOException e) {
-			System.err.println("Config file could not be loaded: " + configFilename);
-			System.err.println(e.getMessage());
-		}
-
-		String appVersion = appProps.getProperty("version");
-		logger.info("kafka-marklogic-source, version: " + appVersion);
-
-		kafkaBrokers = appProps.getProperty(ApplicationConfig.KAFKA_BOOTSTRAP_SERVERS);
-		logger.info("host: " + kafkaBrokers);
-		topicName = appProps.getProperty(ApplicationConfig.KAFKA_TOPIC);
-		logger.info("topic: " + topicName);
-		logger.info("MarkLogic Host: " + appProps.getProperty(ApplicationConfig.CONNECTION_HOST));
-		logger.info("MarkLogic Port: " + appProps.getProperty(ApplicationConfig.CONNECTION_PORT));
-		logger.info("MarkLogic User: " + appProps.getProperty(ApplicationConfig.CONNECTION_USERNAME));
-
-		producer = ProducerCreator.createProducer(kafkaBrokers);
-
-		databaseClient = new DefaultDatabaseClientCreator().createDatabaseClient(appProps);
-
-		queryMgr = databaseClient.newQueryManager();
-		query = appProps.getProperty(ApplicationConfig.QUERY_STRING);
-		logger.info("Query: " + query);
-		stringQueryDefinition = queryMgr.newStringDefinition();
-		stringQueryDefinition.setCriteria(query);
-
-		targetCollection = appProps.getProperty(ApplicationConfig.QUERY_TARGET_COLLECTION);
-		logger.info("Query Collection: " + targetCollection);
-		stringQueryDefinition.setCollections(targetCollection);
-
-		sentCollection = appProps.getProperty(ApplicationConfig.QUERY_SENT_COLLECTION);
-		logger.info("Sent Collection: " + sentCollection);
+        Properties appProps = loadProperties(args);
+        ApplicationConfig config = new ApplicationConfig(appProps);
+        loadConfigurationFromProperties(config);
 
 		logger.info("Querying for MarkLogic records");
 		SearchHandle results = queryMgr.search(stringQueryDefinition, new SearchHandle());
@@ -133,4 +83,62 @@ public class KafkaMarklogicSource {
 		}
 		return records;
 	}
+
+	private static Properties loadProperties(String[] args) {
+        String configFilename = null;
+
+        try {
+            if (args.length == 1) {
+                configFilename = args[0];
+            } else {
+                throw new ParseException("The configuration file must be specified.");
+            }
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            System.err.println("kafka-marklogic-source <CONFIG-FILE>");
+
+            System.exit(1);
+            return null;
+        }
+
+        Properties appProps = new Properties();
+        try {
+            appProps.load(new FileInputStream(configFilename));
+        } catch (IOException e) {
+            System.err.println("Config file could not be loaded: " + configFilename);
+            System.err.println(e.getMessage());
+
+            System.exit(1);
+            return null;
+        }
+        return appProps;
+    }
+
+    private static void loadConfigurationFromProperties(ApplicationConfig config) {
+        kafkaBrokers = config.getString(ApplicationConfig.KAFKA_BOOTSTRAP_SERVERS);
+        logger.info("host: " + kafkaBrokers);
+        topicName = config.getString(ApplicationConfig.KAFKA_TOPIC);
+        logger.info("topic: " + topicName);
+        logger.info("MarkLogic Host: " + config.getString(ApplicationConfig.CONNECTION_HOST));
+        logger.info("MarkLogic Port: " + config.getInt(ApplicationConfig.CONNECTION_PORT));
+        logger.info("MarkLogic User: " + config.getString(ApplicationConfig.CONNECTION_USERNAME));
+
+        producer = ProducerCreator.createProducer(kafkaBrokers);
+
+        databaseClient = new DefaultDatabaseClientCreator().createDatabaseClient(config);
+
+        queryMgr = databaseClient.newQueryManager();
+        query = config.getString(ApplicationConfig.QUERY_STRING);
+        logger.info("Query: " + query);
+        stringQueryDefinition = queryMgr.newStringDefinition();
+        stringQueryDefinition.setCriteria(query);
+
+        targetCollection = config.getString(ApplicationConfig.QUERY_TARGET_COLLECTION);
+        logger.info("Query Collection: " + targetCollection);
+        stringQueryDefinition.setCollections(targetCollection);
+
+        sentCollection = config.getString(ApplicationConfig.QUERY_SENT_COLLECTION);
+        logger.info("Sent Collection: " + sentCollection);
+    }
+
 }

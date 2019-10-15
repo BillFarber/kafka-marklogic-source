@@ -1,6 +1,6 @@
 package com.marklogic.client;
 
-import java.util.Properties;
+import com.marklogic.ApplicationConfig;
 
 /**
  * Defines how a map of properties read in by Kafka are used to construct a DatabaseClient. The intent is that
@@ -10,6 +10,6 @@ import java.util.Properties;
  */
 public interface DatabaseClientCreator {
 
-	DatabaseClient createDatabaseClient(Properties appProps);
+	DatabaseClient createDatabaseClient(ApplicationConfig config);
 
 }
