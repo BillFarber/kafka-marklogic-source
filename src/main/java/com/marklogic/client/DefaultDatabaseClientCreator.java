@@ -5,19 +5,26 @@ import com.marklogic.client.ext.ConfiguredDatabaseClientFactory;
 import com.marklogic.client.ext.DatabaseClientConfig;
 import com.marklogic.client.ext.DefaultConfiguredDatabaseClientFactory;
 import com.marklogic.client.ext.SecurityContextType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.security.NoSuchAlgorithmException;
 
 public class DefaultDatabaseClientCreator implements DatabaseClientCreator {
+    private static Logger logger = LoggerFactory.getLogger(DefaultDatabaseClientCreator.class);
 
-	private ConfiguredDatabaseClientFactory configuredDatabaseClientFactory;
+    private ConfiguredDatabaseClientFactory configuredDatabaseClientFactory;
 
 	public DefaultDatabaseClientCreator() {
 		this.configuredDatabaseClientFactory = new DefaultConfiguredDatabaseClientFactory();
 	}
 
 	protected DatabaseClientConfig buildDatabaseClientConfig(ApplicationConfig config) {
+        logger.info("MarkLogic Host: " + config.getString(ApplicationConfig.CONNECTION_HOST));
+        logger.info("MarkLogic Port: " + config.getInt(ApplicationConfig.CONNECTION_PORT));
+        logger.info("MarkLogic User: " + config.getString(ApplicationConfig.CONNECTION_USERNAME));
+
 		DatabaseClientConfig clientConfig = new DatabaseClientConfig();
 		clientConfig.setCertFile(config.getString(ApplicationConfig.CONNECTION_CERT_FILE));
 		clientConfig.setCertPassword(config.getString(ApplicationConfig.CONNECTION_CERT_PASSWORD));
@@ -66,10 +73,6 @@ public class DefaultDatabaseClientCreator implements DatabaseClientCreator {
 
 		clientConfig.setSslHostnameVerifier((hostname, cns, subjectAlts) -> {
 		});
-	}
-
-	public void setConfiguredDatabaseClientFactory(ConfiguredDatabaseClientFactory configuredDatabaseClientFactory) {
-		this.configuredDatabaseClientFactory = configuredDatabaseClientFactory;
 	}
 
 	@Override
