@@ -4,6 +4,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseQuerier;
 import com.marklogic.client.DefaultDatabaseClientCreator;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.kafka.producer.Callback;
 import com.marklogic.kafka.producer.ProducerCreator;
 import org.apache.commons.cli.*;
 import org.apache.kafka.clients.producer.Producer;
@@ -47,7 +48,8 @@ public class KafkaMarklogicSource {
 	private static void sendRecordsToKafka(ArrayList<ProducerRecord> records) {
         for (ProducerRecord record : records) {
             try {
-                RecordMetadata metadata = (RecordMetadata) producer.send(record).get();
+                com.marklogic.kafka.producer.Callback callback = new Callback(record.headers());
+                RecordMetadata metadata = (RecordMetadata) producer.send(record, callback).get();
                 System.out.println("Record sent to partition " + metadata.partition() + " with offset " + metadata.offset());
             } catch (ExecutionException e) {
                 System.out.println("Error in sending record");

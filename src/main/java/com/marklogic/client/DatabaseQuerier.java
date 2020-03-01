@@ -57,6 +57,7 @@ public class DatabaseQuerier {
             DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
             StringHandle stringHandle = new StringHandle();
             String documentContent = textDocumentManager.read(docUri, metadataHandle, stringHandle).get();
+            UriHeader header = new UriHeader("URI", docUri);
             ProducerRecord<Long, String> record = new ProducerRecord(topicName, documentContent);
             records.add(record);
 
