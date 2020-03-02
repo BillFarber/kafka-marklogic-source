@@ -48,6 +48,7 @@ public class DatabaseQuerier {
     }
 
     public ArrayList<ProducerRecord> getRecordsFromMatches(SearchHandle results, String topicName) {
+        UriHeader topicHeader = new UriHeader("TOPIC", topicName);
         TextDocumentManager textDocumentManager = databaseClient.newTextDocumentManager();
         ArrayList<ProducerRecord> records = new ArrayList<>();
         MatchDocumentSummary[] summaries = results.getMatchResults();
@@ -57,8 +58,10 @@ public class DatabaseQuerier {
             DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
             StringHandle stringHandle = new StringHandle();
             String documentContent = textDocumentManager.read(docUri, metadataHandle, stringHandle).get();
-            UriHeader header = new UriHeader("URI", docUri);
             ProducerRecord<Long, String> record = new ProducerRecord(topicName, documentContent);
+            UriHeader uriHeader = new UriHeader("URI", docUri);
+            record.headers().add(uriHeader);
+            record.headers().add(topicHeader);
             records.add(record);
 
             metadataHandle.getCollections().remove(targetCollection);
