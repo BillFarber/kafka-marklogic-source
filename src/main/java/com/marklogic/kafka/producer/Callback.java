@@ -19,15 +19,20 @@ public class Callback implements org.apache.kafka.clients.producer.Callback {
 
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
-        Iterator headersIterator = headers.iterator();
-        logger.info(String.format("Committed document '%s' to Kafka topic %s"
-                , new String(headers.lastHeader("URI").value()), new String(headers.lastHeader("TOPIC").value())));
-        if (logger.isDebugEnabled()) {
-            while (headersIterator.hasNext()) {
-                UriHeader uriHeader = (UriHeader) headersIterator.next();
-                logger.debug("Committed document:");
-                logger.debug("Key: " + uriHeader.key());
-                logger.debug("Value: " + uriHeader.getValue());
+        if (exception != null) {
+            logger.error(String.format("Exception reported for document '%s': %s",
+                    new String(headers.lastHeader("URI").value()), exception));
+        } else {
+            Iterator headersIterator = headers.iterator();
+            logger.info(String.format("Committed document '%s' to Kafka topic %s",
+                    new String(headers.lastHeader("URI").value()), new String(headers.lastHeader("TOPIC").value())));
+            if (logger.isDebugEnabled()) {
+                while (headersIterator.hasNext()) {
+                    UriHeader uriHeader = (UriHeader) headersIterator.next();
+                    logger.debug("Committed document:");
+                    logger.debug("Key: " + uriHeader.key());
+                    logger.debug("Value: " + uriHeader.getValue());
+                }
             }
         }
     }
