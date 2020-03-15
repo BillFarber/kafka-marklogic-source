@@ -101,6 +101,9 @@ public class KafkaMarklogicSource {
 
         databaseClient = new DefaultDatabaseClientCreator().createDatabaseClient(config);
         databaseQuerier = new DatabaseQuerier(config, databaseClient);
+        Callback.initializeCallbackClass(databaseClient,
+                config.getString(ApplicationConfig.QUERY_TARGET_COLLECTION),
+                config.getString(ApplicationConfig.QUERY_SENT_COLLECTION));
     }
 
 }

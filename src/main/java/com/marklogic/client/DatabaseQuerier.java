@@ -17,12 +17,11 @@ import java.util.ArrayList;
 public class DatabaseQuerier {
     private static Logger logger = LoggerFactory.getLogger(DatabaseQuerier.class);
 
-    private static DatabaseClient databaseClient;
-    private static QueryManager queryMgr;
-    private static StringQueryDefinition stringQueryDefinition;
-    private static String targetCollection;
-    private static String sentCollection;
-    private static String query;
+    private DatabaseClient databaseClient;
+    private QueryManager queryMgr;
+    private StringQueryDefinition stringQueryDefinition;
+    private String query;
+    private String targetCollection = null;
 
     public DatabaseQuerier(ApplicationConfig config, DatabaseClient databaseClient) {
         this.databaseClient = databaseClient;
@@ -35,9 +34,6 @@ public class DatabaseQuerier {
         targetCollection = config.getString(ApplicationConfig.QUERY_TARGET_COLLECTION);
         logger.info("Query Collection: " + targetCollection);
         stringQueryDefinition.setCollections(targetCollection);
-
-        sentCollection = config.getString(ApplicationConfig.QUERY_SENT_COLLECTION);
-        logger.info("Sent Collection: " + sentCollection);
     }
 
     public SearchHandle search() {
@@ -63,10 +59,6 @@ public class DatabaseQuerier {
             record.headers().add(uriHeader);
             record.headers().add(topicHeader);
             records.add(record);
-
-            metadataHandle.getCollections().remove(targetCollection);
-            metadataHandle.getCollections().add(sentCollection);
-            textDocumentManager.writeMetadata(docUri, metadataHandle);
         }
         return records;
     }
